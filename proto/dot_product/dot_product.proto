@@ -1,0 +1,32 @@
+edition = "2023";
+
+package dot_product;
+
+import "google/protobuf/go_features.proto";
+option go_package = "github.com/bartwild/WSO-scaling-and-ha-in-stateless-apps/proto/dot_product";
+option features.field_presence = EXPLICIT;
+option features.(pb.go).api_level = API_OPAQUE;
+
+// Message type for embedding dotProducts vectors to make batching possible
+message InferInput {
+    repeated float v1 = 2;
+    repeated float v2 = 3;
+}
+// Message type for serving of dotProducts that uses avx and fma to accelerate computations
+message DotProduct {
+    string id = 1 [features.field_presence = EXPLICIT];
+    repeated InferInput input= 2;
+}
+
+// Message type for response for dotProducts serving
+message DotProductResult {
+    string id = 1 [features.field_presence = EXPLICIT];
+    repeated float result = 2;
+}
+
+// Server definition
+service DotProductService {
+    // Function that takes 2 products and returns result of dotProduct operation
+    // May be used with batches
+    rpc Calculate(DotProduct) returns (DotProductResult);
+}

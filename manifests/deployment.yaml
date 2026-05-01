@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-app
+  labels:
+    app: grpc-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: grpc-app
+  template:
+    metadata:
+      labels:
+        app: grpc-app
+    spec:
+      terminationGracePeriodSeconds: 40
+      containers:
+        - name: grpc-app
+          image: grpc-app:latest
+          imagePullPolicy: Never
+          ports:
+            - name: grpc
+              containerPort: 50051
+            - name: http-mgmt
+              containerPort: 8081
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            failureThreshold: 2
